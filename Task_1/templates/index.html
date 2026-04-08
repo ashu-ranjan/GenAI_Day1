@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Task 1: Reasoning Agent Web App</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+      :root {
+        --primary: #2563eb;
+        --primary-dark: #1d4ed8;
+        --bg-gradient: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        --glass-bg: rgba(255, 255, 255, 0.8);
+        --glass-border: rgba(255, 255, 255, 0.3);
+        --shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.1);
+        
+        --color-thought: #f59e0b;
+        --color-action: #3b82f6;
+        --color-observation: #6366f1;
+        --color-final: #10b981;
+      }
+
+      body { 
+        font-family: 'Plus Jakarta Sans', sans-serif; 
+        margin: 0; 
+        padding: 0; 
+        background: var(--bg-gradient); 
+        color: #1e293b; 
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .container { 
+        width: 90%;
+        max-width: 850px; 
+        margin: 40px auto; 
+        padding: 40px; 
+        background: var(--glass-bg); 
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid var(--glass-border);
+        border-radius: 24px; 
+        box-shadow: var(--shadow);
+      }
+
+      h1 { 
+        font-weight: 700;
+        font-size: 2.2rem;
+        margin-bottom: 8px;
+        background: linear-gradient(to right, #1d4ed8, #2563eb);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+
+      .note { 
+        color: #64748b; 
+        font-size: 1.1rem;
+        margin-bottom: 32px;
+        line-height: 1.6;
+      }
+
+      .section { margin-bottom: 32px; }
+
+      .prompt-box { 
+        width: 100%; 
+        min-height: 120px; 
+        padding: 20px; 
+        font-size: 1.05rem; 
+        border: 2px solid #e2e8f0; 
+        border-radius: 16px; 
+        background: white;
+        transition: all 0.3s ease;
+        resize: vertical;
+        box-sizing: border-box;
+      }
+
+      .prompt-box:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+      }
+
+      .button { 
+        display: inline-flex; 
+        align-items: center;
+        justify-content: center;
+        background: var(--primary); 
+        color: white; 
+        border: none; 
+        padding: 14px 28px; 
+        border-radius: 12px; 
+        cursor: pointer; 
+        font-size: 1.1rem; 
+        font-weight: 600;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
+      }
+
+      .button:hover { 
+        background: var(--primary-dark); 
+        transform: translateY(-2px);
+        box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.3);
+      }
+
+      .button:active {
+        transform: translateY(0);
+      }
+
+      .button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+
+      .trace-header {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .step { 
+        background: white; 
+        margin-bottom: 16px; 
+        padding: 20px; 
+        border-radius: 16px; 
+        border: 1px solid #f1f5f9;
+        transition: transform 0.3s ease;
+        animation: slideIn 0.5s ease backwards;
+      }
+
+      .step:hover {
+        transform: scale(1.01);
+      }
+
+      @keyframes slideIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+
+      .step-type { 
+        font-weight: 700; 
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 8px; 
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .step-text {
+        line-height: 1.6;
+        color: #334155;
+      }
+
+      /* Step Variants */
+      .type-thought { border-left: 5px solid var(--color-thought); }
+      .type-thought .step-type { color: var(--color-thought); }
+      
+      .type-action { border-left: 5px solid var(--color-action); }
+      .type-action .step-type { color: var(--color-action); }
+      
+      .type-observation { border-left: 5px solid var(--color-observation); }
+      .type-observation .step-type { color: var(--color-observation); }
+      
+      .type-final { 
+        border-left: 5px solid var(--color-final); 
+        background: #f0fdf4;
+        border-color: var(--color-final);
+      }
+      .type-final .step-type { color: var(--color-final); }
+
+      .loading-spinner {
+        display: none;
+        width: 20px;
+        height: 20px;
+        border: 3px solid rgba(255,255,255,.3);
+        border-radius: 50%;
+        border-top-color: #fff;
+        animation: spin 1s ease-in-out infinite;
+        margin-right: 10px;
+      }
+
+      @keyframes spin {
+        to { transform: rotate(360deg); }
+      }
+
+      form.submitting .loading-spinner { display: inline-block; }
+      form.submitting .button-text { display: none; }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Reasoning Agent</h1>
+      <p class="note">A sophisticated ReAct agent powered by DuckDuckGo. Enter a question to watch the reasoning process in real-time.</p>
+
+      <div class="section">
+        <form method="post" id="chat-form">
+          <textarea name="question" class="prompt-box" placeholder="What would you like to know?" required>{{ result.question if result else '' }}</textarea>
+          <div style="margin-top: 16px;">
+            <button class="button" type="submit" id="submit-btn">
+              <span class="loading-spinner"></span>
+              <span class="button-text">Analyze Question</span>
+            </button>
+          </div>
+        </form>
+      </div>
+
+      {% if result %}
+        <div class="section">
+          <div class="trace-header">
+            <span>🧠</span> Agent reasoning Trace
+          </div>
+          {% for step in result.steps %}
+            {% set step_class = "type-thought" if step.type == "Thought" 
+                            else "type-action" if step.type == "Action"
+                            else "type-observation" if step.type == "Observation"
+                            else "type-final" %}
+            
+            {% set step_icon = "💡" if step.type == "Thought" 
+                            else "⚡" if step.type == "Action"
+                            else "🔍" if step.type == "Observation"
+                            else "✅" %}
+
+            <div class="step {{ step_class }}" style="animation-delay: {{ loop.index0 * 0.1 }}s">
+              <div class="step-type">
+                <span>{{ step_icon }}</span>
+                <span>{{ step.type }}</span>
+              </div>
+              <div class="step-text">{{ step.text }}</div>
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    </div>
+
+    <script>
+      document.getElementById('chat-form').addEventListener('submit', function() {
+        const btn = document.getElementById('submit-btn');
+        const form = document.getElementById('chat-form');
+        btn.disabled = true;
+        form.classList.add('submitting');
+      });
+    </script>
+  </body>
+</html>

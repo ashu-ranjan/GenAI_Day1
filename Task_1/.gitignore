@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+env/
+venv/
+ENV/
+
+# Flask
+instance/
+.webassets-cache
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
+
+# Sensitive data
+.env
+
+# IDEs
+.vscode/
+.idea/
+
+# OS specific
+.DS_Store
+Thumbs.db
